@@ -1,9 +1,9 @@
 $PsExecPath = Join-Path $env:TEMP "PsExec64.exe"
 
 $TaskNames = @(
-    "ZararliGorev2",
-    "ZararliGorev3",
-    "AnomalousTaskX"
+    "upgradef1",
+    "TempVBS2",
+    "WinCheck"
 )
 
 if (Test-Path $PsExecPath) {
