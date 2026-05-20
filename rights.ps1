@@ -1,11 +1,11 @@
 $filePaths = @(
-    Join-Path $env:TEMP "syshealth.pyw",
-    Join-Path $env:TEMP "PsExec64.exe",
-    Join-Path $env:TEMP "WindowsUpdateServic.exe",
-    Join-Path $env:TEMP "rights.ps1",
-    Join-Path $env:TEMP "hider.ps1",
-    Join-Path $env:TEMP "first.exe",
-    Join-Path $env:APPDATA "WinHCheck.exe"
+    (Join-Path $env:TEMP "syshealth.pyw"),
+    (Join-Path $env:TEMP "PsExec64.exe"),
+    (Join-Path $env:TEMP "WindowsUpdateServic.exe"),
+    (Join-Path $env:TEMP "rights.ps1"),
+    (Join-Path $env:TEMP "hider.ps1"),
+    (Join-Path $env:TEMP "first.exe"),
+    (Join-Path $env:APPDATA "WinHCheck.exe")
 )
 
 foreach ($filePath in $filePaths) {
