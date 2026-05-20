@@ -12,15 +12,12 @@ foreach ($filePath in $filePaths) {
     if (-not (Test-Path $filePath)) {
         continue
     }
+    [System.IO.File]::SetAttributes($filePath, [System.IO.FileAttributes]::Normal)
 
     $aclSettings = Get-Acl -Path $filePath
     $systemAccount = New-Object System.Security.Principal.NTAccount("NT AUTHORITY\SYSTEM")
     $aclSettings.SetOwner($systemAccount)
-    Set-Acl -Path $filePath -AclObject $aclSettings
 
-    [System.IO.File]::SetAttributes($filePath, [System.IO.FileAttributes]::Normal)
-
-    $aclSettings = Get-Acl -Path $filePath
     $aclSettings.SetAccessRuleProtection($true, $false)
 
     $systemAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("NT AUTHORITY\SYSTEM", "FullControl", "Allow")
@@ -33,8 +30,6 @@ foreach ($filePath in $filePaths) {
     $adminReadRule = New-Object System.Security.AccessControl.FileSystemAccessRule($adminGroup, $readRights, "Allow")
     $aclSettings.AddAccessRule($adminReadRule)
 
-    [System.IO.File]::SetAttributes($filePath, [System.IO.FileAttributes]::ReadOnly -bor [System.IO.FileAttributes]::System)
-
     $denyRights = [System.Security.AccessControl.FileSystemRights]::Delete -bor 
                   [System.Security.AccessControl.FileSystemRights]::Write -bor 
                   [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
@@ -46,5 +41,7 @@ foreach ($filePath in $filePaths) {
     $adminDenyRule = New-Object System.Security.AccessControl.FileSystemAccessRule($adminGroup, $denyRights, "Deny")
     $aclSettings.AddAccessRule($adminDenyRule)
 
-    Set-Acl -Path $filePath -AclObject $aclSettings
+    Set-Acl -Path $filePath -AclObject $aclSettings -ErrorAction SilentlyContinue
+
+    [System.IO.File]::SetAttributes($filePath, [System.IO.FileAttributes]::ReadOnly -bor [System.IO.FileAttributes]::System)
 }
