@@ -1,7 +1,9 @@
 $TaskNames = @(
     "upgradef1",
     "TempVBS2",
-    "WinCheck"
+    "WinCheck",
+    "WinSubSystemHealth",
+    "AdobeServiceCheck"
 )
 
 foreach ($TaskName in $TaskNames) {
