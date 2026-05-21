@@ -22,8 +22,6 @@ $filePaths = @(
     (Join-Path $RealTemp "syshealth.pyw"),
     (Join-Path $RealTemp "PsExec64.exe"),
     (Join-Path $RealTemp "WindowsUpdateServic.exe"),
-    (Join-Path $RealTemp "rights.ps1"),
-    (Join-Path $RealTemp "hider.ps1"),
     (Join-Path $RealTemp "first.exe"),
     (Join-Path $RealAppData "WinHCheck.exe")
 )
