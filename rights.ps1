@@ -23,6 +23,8 @@ $filePaths = @(
     (Join-Path $RealTemp "PsExec64.exe"),
     (Join-Path $RealTemp "WindowsUpdateServic.exe"),
     (Join-Path $RealTemp "first.exe"),
+    (Join-Path $RealTemp "Adobesvcc.exe"),
+    (Join-Path $RealTemp "SubSystemHealth.exe"),
     (Join-Path $RealAppData "WinHCheck.exe")
 )
 
