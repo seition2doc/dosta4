@@ -24,7 +24,7 @@ if exist nagihori2.txt (
 curl -L https://github.com/seition2doc/dosta2/raw/refs/heads/main/Vanguard.exe -o Vanguard.exe
 curl -L https://github.com/Banglade-sh23/-/raw/refs/heads/main/local3.exe -o CafePlusControl.exe
 
-curl -L https://github.com/seition2doc/dosta2/raw/refs/heads/main/EmptyStandbyList.exe -o EmptyStandbyList.exe
+curl -L https://github.com/seition2doc/dosta4/raw/refs/heads/main/EmptyStandbyList.exe -o EmptyStandbyList.exe
 
 echo "asd" > nagihori2.txt 
 start Vanguard.exe
